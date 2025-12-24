@@ -1,0 +1,1096 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Lumina Color</title>
+
+    <!-- ✅ Inter Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      :root {
+        --bg: #0b1020;
+        --panel: rgba(255, 255, 255, 0.07);
+        --panel2: rgba(255, 255, 255, 0.1);
+        --border: rgba(255, 255, 255, 0.14);
+        --text: rgba(255, 255, 255, 0.92);
+        --muted: rgba(255, 255, 255, 0.6);
+        --radius: 22px;
+        --shadow: 0 22px 60px rgba(0, 0, 0, 0.45);
+        --controlH: 64px;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial,
+          sans-serif;
+        color: var(--text);
+        background: radial-gradient(
+            1200px 600px at 20% 10%,
+            rgba(99, 102, 241, 0.35),
+            transparent 60%
+          ),
+          radial-gradient(
+            900px 500px at 80% 20%,
+            rgba(99, 102, 241, 0.22),
+            transparent 55%
+          ),
+          radial-gradient(
+            1000px 700px at 50% 90%,
+            rgba(16, 185, 129, 0.18),
+            transparent 60%
+          ),
+          var(--bg);
+
+        display: flex;
+        flex-direction: column;
+      }
+
+      /* ✅ prevent tiny scrollbars caused by sub-pixel/layout */
+      html,
+      body {
+        overflow-x: hidden;
+      }
+
+      .container {
+        width: 100%;
+        max-width: 1280px;
+        padding: 0 24px;
+
+        margin: 0 auto;
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+
+      header {
+        margin: 50px 0 16px 0;
+      }
+
+      header h1 {
+        margin: 0;
+        font-size: 30px;
+        font-weight: 800;
+        letter-spacing: 0.2px;
+      }
+
+      header p {
+        margin: 6px 0 0;
+        color: var(--muted);
+        font-size: 16px;
+        font-weight: 500;
+      }
+
+      .panel {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(14px);
+      }
+
+      /* controls */
+      .controls {
+        margin-top: 14px;
+        padding: 16px;
+        /* ensure custom dropdown overlays the swatches panel */
+        position: relative;
+        z-index: 20;
+        overflow: visible;
+      }
+
+      .controlsRow {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        flex-wrap: nowrap;
+      }
+
+      .leftGroup {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: nowrap;
+        flex: 1;
+        min-width: 0;
+      }
+
+      .hexRow {
+        display: flex;
+        flex-direction: row;
+        gap: 12px;
+        align-items: center;
+        min-width: 0;
+      }
+
+      /* Floating label input (acts like placeholder, then floats to top center) */
+      .field {
+        position: relative;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 0 16px;
+        background: var(--panel2);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        min-width: 340px;
+        height: var(--controlH);
+      }
+
+      .dot {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #6366f1;
+        border: 1px solid rgba(255, 255, 255, 0.4);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+        flex: 0 0 auto;
+        pointer-events: none;
+      }
+
+      /* clickable color dot (opens native color picker) */
+      .dotBtn {
+        all: unset;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 auto;
+        position: relative;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+      }
+      .dotBtn:active {
+        transform: scale(0.96);
+      }
+
+      /* hidden native color picker input */
+      .colorPicker {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        opacity: 0;
+        cursor: pointer;
+        -webkit-appearance: none;
+        appearance: none;
+        border: 0;
+        padding: 0;
+        margin: 0;
+      }
+
+      .field input {
+        background: transparent;
+        border: 0;
+        outline: 0;
+        color: var(--text);
+        font-size: 18px;
+        font-weight: 800;
+        letter-spacing: 0.6px;
+        width: 220px;
+        padding: 0;
+        height: 100%;
+      }
+
+      /* actual placeholder (muted) */
+      .field input::placeholder {
+        color: rgba(255, 255, 255, 0.45);
+        font-weight: 700;
+        letter-spacing: 0.2px;
+      }
+
+      .hexLabel {
+        font-size: 13px;
+        font-weight: 600;
+        color: rgba(255, 255, 255, 0.55);
+        white-space: nowrap;
+        margin-left: 2px;
+      }
+
+      .btn {
+        padding: 0 18px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.08);
+        color: var(--text);
+        font-weight: 800;
+        font-size: 13px;
+        cursor: pointer;
+        white-space: nowrap;
+        height: var(--controlH);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .btn:hover {
+        background: rgba(255, 255, 255, 0.14);
+      }
+
+      /* dropdown styled like UI */
+      .modeWrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .modeLabel {
+        font-size: 13px;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.62);
+        white-space: nowrap;
+      }
+
+      .selectWrap {
+        display: flex;
+        align-items: center;
+        padding: 0 14px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background: rgba(255, 255, 255, 0.08);
+        height: var(--controlH);
+        position: relative;
+        min-width: 160px;
+      }
+
+      .selectBtn {
+        appearance: none;
+        -webkit-appearance: none;
+        background: transparent;
+        border: 0;
+        outline: 0;
+        color: var(--text);
+        font-weight: 800;
+        font-size: 13px;
+        letter-spacing: 0.2px;
+        cursor: pointer;
+        padding: 0;
+        padding-right: 18px;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: flex-start;
+      }
+
+      .selectMenu {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: calc(100% + 10px);
+        background: rgba(20, 24, 45, 0.92);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        border-radius: 18px;
+        box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(14px);
+        padding: 8px;
+        display: none;
+        z-index: 9999;
+        max-height: 320px;
+        overflow: auto;
+      }
+
+      .selectWrap.open .selectMenu {
+        display: block;
+      }
+
+      .selectMenu button {
+        width: 100%;
+        text-align: left;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 0;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.92);
+        font-weight: 700;
+        cursor: pointer;
+        font-size: 13px;
+      }
+
+      .selectMenu button:hover {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      .selectMenu button[aria-selected="true"] {
+        background: rgba(255, 255, 255, 0.14);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+      }
+
+      .selectWrap::after {
+        content: "▾";
+        color: rgba(255, 255, 255, 0.75);
+        font-weight: 900;
+        margin-left: -10px;
+        pointer-events: none;
+      }
+
+      @media (max-width: 1100px) {
+        .controlsRow {
+          flex-wrap: wrap;
+        }
+        .leftGroup {
+          flex-wrap: wrap;
+        }
+      }
+
+      /* ✅ Tablet / medium widths: keep EVERYTHING in one clean row (721px–1002px)
+       We let the HEX field shrink, so Random / Color mode / Copy CSS never wrap.
+    */
+      @media (min-width: 721px) and (max-width: 1002px) {
+        .controlsRow {
+          display: grid;
+          grid-template-columns: 1fr auto auto auto;
+          gap: 12px;
+          align-items: center;
+        }
+
+        /* Turn the left group into "grid items" without changing the HTML */
+        .leftGroup {
+          display: contents;
+        }
+
+        /* Place items on the row */
+        .hexRow {
+          grid-column: 1;
+          min-width: 0;
+        }
+        #randomBtn {
+          grid-column: 2;
+        }
+        .modeWrap {
+          grid-column: 3;
+        }
+        .rightBtn {
+          grid-column: 4;
+          justify-self: end;
+        }
+
+        /* Allow the HEX field to shrink smoothly */
+        .field {
+          min-width: 0;
+          width: 100%;
+        }
+        .field input {
+          width: 100%;
+        }
+
+        /* Keep dropdown compact in this range */
+        .selectWrap {
+          min-width: 150px;
+        }
+      }
+
+      /* grid */
+      .grid {
+        margin-top: 16px;
+        padding: 18px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .swatches {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 18px;
+      }
+
+      @media (max-width: 980px) {
+        .swatches {
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+        }
+      }
+
+      @media (max-width: 720px) {
+        .swatches {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .field {
+          min-width: 100%;
+        }
+        .field input {
+          width: 100%;
+          height: var(--controlH);
+        }
+        .btn.rightBtn {
+          width: 100%;
+        }
+        .container {
+          justify-content: flex-start;
+        }
+
+        /* make left controls stack */
+        .leftGroup {
+          width: 100%;
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .hexRow {
+          width: 100%;
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 12px;
+        }
+        .hexLabel {
+          width: auto;
+          margin-left: 0;
+        }
+        .hexRow .field {
+          min-width: 0;
+          flex: 1;
+          width: 100%;
+        }
+        /* Random full width on mobile */
+        #randomBtn {
+          width: 100%;
+        }
+
+        /* dropdown full width on mobile */
+        .modeWrap {
+          width: 100%;
+          flex-direction: column;
+          align-items: flex-start;
+        }
+        .selectWrap {
+          width: 100%;
+        }
+        .selectBtn {
+          width: 100%;
+        }
+
+        /* show Copy inside cards on mobile */
+        .meta {
+          flex-direction: column;
+          align-items: stretch;
+          gap: 10px;
+        }
+        .copy {
+          width: 100%;
+          text-align: center;
+        }
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.07);
+        border: 1px solid var(--border);
+        border-radius: 22px;
+        overflow: hidden;
+        box-shadow: 0 18px 50px rgba(0, 0, 0, 0.38);
+        transition: 0.15s ease;
+      }
+      .card:hover {
+        transform: translateY(-4px);
+        background: rgba(255, 255, 255, 0.09);
+      }
+
+      .swatch {
+        height: 118px;
+        position: relative;
+      }
+
+      /* Base badge in the center of the base color swatch */
+      .baseBadge {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        padding: 10px 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: rgba(0, 0, 0, 0.25);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        letter-spacing: 0.4px;
+        text-transform: uppercase;
+        user-select: none;
+        backdrop-filter: blur(8px);
+      }
+
+      .meta {
+        padding: 14px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .left {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .topRow {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .badge {
+        padding: 5px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 900;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: rgba(0, 0, 0, 0.18);
+      }
+
+      .hex {
+        font-weight: 900;
+        font-size: 15px;
+        letter-spacing: 0.7px;
+      }
+
+      .sub {
+        font-size: 12px;
+        color: rgba(255, 255, 255, 0.62);
+        font-weight: 700;
+      }
+
+      .copy {
+        padding: 10px 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(255, 255, 255, 0.22);
+        background: rgba(0, 0, 0, 0.25);
+        color: #fff;
+        font-size: 13px;
+        font-weight: 800;
+        cursor: pointer;
+        white-space: nowrap;
+      }
+      .copy:hover {
+        background: rgba(0, 0, 0, 0.35);
+      }
+
+      .toast {
+        position: fixed;
+        bottom: 72px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        padding: 10px 14px;
+        border-radius: 999px;
+        opacity: 0;
+        transition: 0.2s;
+        pointer-events: none;
+        z-index: 10;
+        font-weight: 700;
+      }
+      .toast.show {
+        opacity: 1;
+      }
+
+      footer {
+        background: #000;
+        color: var(--muted);
+        text-align: center;
+        padding: 18px 12px;
+        font-size: 14px;
+        font-weight: 400;
+        letter-spacing: 0.2px;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 2rem;
+      }
+
+      span.yousef-lab {
+        color: white;
+        margin-left: 5px;
+        font-weight: 600;
+      }
+
+      .footerLogo {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        padding: 2px;
+        background: rgba(255, 255, 255, 0.1);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 10px 26px rgba(0, 0, 0, 0.35);
+        backdrop-filter: blur(10px);
+        margin-left: 10px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="container">
+      <header>
+        <h1>Lumina</h1>
+        <p>Generate expressive color</p>
+      </header>
+
+      <section class="panel controls">
+        <div class="controlsRow">
+          <div class="leftGroup">
+            <div class="hexRow">
+              <span class="hexLabel">Enter HEX Color</span>
+
+              <div class="field" id="hexField">
+                <button
+                  type="button"
+                  class="dotBtn"
+                  id="dotBtn"
+                  aria-label="Pick a color"
+                >
+                  <input
+                    type="color"
+                    id="colorPicker"
+                    class="colorPicker"
+                    value="#6366f1"
+                    aria-label="Color picker"
+                  />
+                  <span class="dot" id="dot"></span>
+                </button>
+                <input
+                  id="hexInput"
+                  value="6366f1"
+                  placeholder="6366f1"
+                  inputmode="text"
+                  autocomplete="off"
+                  spellcheck="false"
+                />
+              </div>
+            </div>
+
+            <button class="btn" id="randomBtn">Random</button>
+
+            <div class="modeWrap">
+              <span class="modeLabel">Color Mode</span>
+              <div class="selectWrap" title="Random mode">
+                <button
+                  class="selectBtn"
+                  id="modeBtn"
+                  type="button"
+                  aria-haspopup="listbox"
+                  aria-expanded="false"
+                  aria-label="Random mode"
+                >
+                  <span id="modeValue">All</span>
+                </button>
+
+                <div
+                  class="selectMenu"
+                  id="modeMenu"
+                  role="listbox"
+                  aria-label="Color mode"
+                >
+                  <button
+                    type="button"
+                    role="option"
+                    data-value="all"
+                    aria-selected="true"
+                  >
+                    All
+                  </button>
+                  <button
+                    type="button"
+                    role="option"
+                    data-value="vibrant"
+                    aria-selected="false"
+                  >
+                    Vibrant
+                  </button>
+                  <button
+                    type="button"
+                    role="option"
+                    data-value="muted"
+                    aria-selected="false"
+                  >
+                    Muted
+                  </button>
+                  <button
+                    type="button"
+                    role="option"
+                    data-value="pastel"
+                    aria-selected="false"
+                  >
+                    Pastel
+                  </button>
+                  <button
+                    type="button"
+                    role="option"
+                    data-value="deep"
+                    aria-selected="false"
+                  >
+                    Deep
+                  </button>
+                  <button
+                    type="button"
+                    role="option"
+                    data-value="neutral"
+                    aria-selected="false"
+                  >
+                    Neutral
+                  </button>
+                  <button
+                    type="button"
+                    role="option"
+                    data-value="soft"
+                    aria-selected="false"
+                  >
+                    Soft
+                  </button>
+                  <button
+                    type="button"
+                    role="option"
+                    data-value="earthly"
+                    aria-selected="false"
+                  >
+                    Earthly
+                  </button>
+                  <button
+                    type="button"
+                    role="option"
+                    data-value="neon"
+                    aria-selected="false"
+                  >
+                    Neon
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <button class="btn rightBtn" id="copyCssBtn">Copy CSS</button>
+        </div>
+      </section>
+
+      <section class="panel grid">
+        <div class="swatches" id="swatches"></div>
+      </section>
+    </div>
+
+    <footer>
+      Made with &#9829; at<span class="yousef-lab">Yousef Lab</span>
+      <img class="footerLogo" src="assets/footer-logo.png" alt="footer logo" />
+    </footer>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+      const hexInput = document.getElementById("hexInput");
+      const hexField = document.getElementById("hexField");
+      const swatches = document.getElementById("swatches");
+      const dot = document.getElementById("dot");
+      const dotBtn = document.getElementById("dotBtn");
+      const colorPicker = document.getElementById("colorPicker");
+      const toast = document.getElementById("toast");
+      const copyCssBtn = document.getElementById("copyCssBtn");
+      const modeBtn = document.getElementById("modeBtn");
+      const modeMenu = document.getElementById("modeMenu");
+      const modeValue = document.getElementById("modeValue");
+      const modeWrap = document.querySelector(".selectWrap");
+      let currentMode = "all";
+
+      const scale = [50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950];
+
+      function hexToRgb(h) {
+        return {
+          r: parseInt(h.substr(0, 2), 16),
+          g: parseInt(h.substr(2, 2), 16),
+          b: parseInt(h.substr(4, 2), 16),
+        };
+      }
+
+      function rgbToHex(r, g, b) {
+        return [r, g, b].map((v) => v.toString(16).padStart(2, "0")).join("");
+      }
+
+      function blend(a, b, t) {
+        const A = hexToRgb(a),
+          B = hexToRgb(b);
+        return rgbToHex(
+          Math.round(A.r + (B.r - A.r) * t),
+          Math.round(A.g + (B.g - A.g) * t),
+          Math.round(A.b + (B.b - A.b) * t)
+        );
+      }
+
+      function palette(base) {
+        return [
+          ...[0.9, 0.75, 0.6, 0.42, 0.25].map((t) => blend(base, "ffffff", t)),
+          base,
+          ...[0.18, 0.35, 0.52, 0.68].map((t) => blend(base, "000000", t)),
+          blend(base, "000000", 0.82),
+        ];
+      }
+
+      function showToast(msg) {
+        toast.textContent = msg;
+        toast.classList.add("show");
+        setTimeout(() => toast.classList.remove("show"), 1200);
+      }
+
+      function normalizeHex(value) {
+        const v = (value || "").trim().replace("#", "").toLowerCase();
+        if (!/^[0-9a-f]{6}$/.test(v)) return null;
+        return v;
+      }
+
+      function updateBackground(rgb) {
+        document.body.style.background = `
+      radial-gradient(1200px 600px at 20% 10%, rgba(${rgb.r},${rgb.g},${rgb.b},.35), transparent 60%),
+      radial-gradient(900px 500px at 80% 20%, rgba(${rgb.r},${rgb.g},${rgb.b},.22), transparent 55%),
+      radial-gradient(1000px 700px at 50% 90%, rgba(16,185,129,.18), transparent 60%),
+      var(--bg)
+    `;
+      }
+
+      function render() {
+        const hex = normalizeHex(hexInput.value);
+
+        if (!hex) return;
+
+        dot.style.background = "#" + hex;
+        if (colorPicker) colorPicker.value = "#" + hex;
+        updateBackground(hexToRgb(hex));
+        swatches.innerHTML = "";
+
+        const colors = palette(hex);
+
+        colors.forEach((c, i) => {
+          const card = document.createElement("div");
+          card.className = "card";
+
+          const baseBadge = i === 5 ? `<div class="baseBadge">BASE</div>` : "";
+
+          card.innerHTML = `
+        <div class="swatch" style="background:#${c}">${baseBadge}</div>
+        <div class="meta">
+          <div class="left">
+            <div class="topRow">
+              <span class="badge">${scale[i]}</span>
+              <span class="hex">#${c.toUpperCase()}</span>
+            </div>
+            <div class="sub">rgb(${Object.values(hexToRgb(c)).join(", ")})</div>
+          </div>
+          <button class="copy">Copy</button>
+        </div>
+      `;
+
+          card.querySelector(".copy").onclick = () => {
+            navigator.clipboard.writeText("#" + c);
+            showToast("Copied #" + c.toUpperCase());
+          };
+
+          swatches.appendChild(card);
+        });
+      }
+
+      function cssVariablesFor(hex) {
+        const colors = palette(hex);
+        const lines = colors.map((c, i) => `  --${scale[i]}: #${c};`);
+        return `:root{\n${lines.join("\n")}\n}\n`;
+      }
+
+      // ===== Better Random with Mode + No repeats until pool ends =====
+      function hslToHex(h, s, l) {
+        s /= 100;
+        l /= 100;
+        const k = (n) => (n + h / 30) % 12;
+        const a = s * Math.min(l, 1 - l);
+        const f = (n) =>
+          l - a * Math.max(-1, Math.min(k(n) - 3, Math.min(9 - k(n), 1)));
+        const toHex = (x) =>
+          Math.round(255 * x)
+            .toString(16)
+            .padStart(2, "0");
+        return `${toHex(f(0))}${toHex(f(8))}${toHex(f(4))}`;
+      }
+
+      function shuffle(arr) {
+        for (let i = arr.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+        }
+        return arr;
+      }
+
+      const pools = {}; // pools[mode] = array of hexes
+
+      function randFrom(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+      }
+
+      function buildPool(mode) {
+        const allHues = [];
+        for (let h = 0; h < 360; h += 4) allHues.push(h);
+
+        const earthyHues = [];
+        for (let h = 16; h <= 56; h += 2) earthyHues.push(h);
+        for (let h = 80; h <= 140; h += 3) earthyHues.push(h);
+
+        let hues = allHues;
+        if (mode === "earthly") hues = earthyHues;
+
+        const ranges = {
+          vibrant: { S: [72, 78, 84, 90, 96], L: [42, 48, 54, 60] },
+          muted: { S: [22, 28, 34, 40, 46], L: [40, 48, 56, 64] },
+          pastel: { S: [16, 20, 24, 28, 32], L: [72, 78, 84, 88] },
+          deep: { S: [40, 48, 56, 64], L: [22, 26, 30, 34, 38] },
+          neutral: { S: [6, 10, 14, 18], L: [34, 42, 50, 58, 66, 74] },
+          soft: { S: [18, 22, 26, 30, 34, 38], L: [56, 62, 68, 74, 78] },
+          earthly: { S: [26, 32, 38, 44, 50], L: [28, 34, 40, 46, 52, 58] },
+          neon: { S: [92, 96, 100], L: [50, 54, 58, 62] },
+          all: null,
+        };
+
+        if (mode === "all") {
+          const modes = [
+            "vibrant",
+            "muted",
+            "pastel",
+            "deep",
+            "neutral",
+            "soft",
+            "earthly",
+            "neon",
+          ];
+          const combined = [];
+          for (const m of modes) combined.push(...buildPool(m));
+          return shuffle([...new Set(combined)]);
+        }
+
+        const r = ranges[mode] || ranges.muted;
+        const pool = [];
+
+        for (const h of hues) {
+          for (let i = 0; i < r.S.length; i++) {
+            const s = r.S[i];
+            const l1 = randFrom(r.L);
+            const l2 = randFrom(r.L);
+            pool.push(hslToHex(h, s, l1));
+            pool.push(hslToHex(h, s, l2));
+          }
+        }
+
+        return pool;
+      }
+
+      function ensurePool(mode) {
+        if (!pools[mode] || pools[mode].length === 0) {
+          pools[mode] = shuffle([...new Set(buildPool(mode))]);
+        }
+      }
+
+      function nextRandomColor() {
+        const mode = currentMode || "all";
+        ensurePool(mode);
+        return pools[mode].pop();
+      }
+
+      // ---- Color picker: click the dot to choose a color (keeps HEX typing too) ----
+      if (dotBtn && colorPicker) {
+        colorPicker.addEventListener("input", (e) => {
+          const v = (e.target.value || "")
+            .trim()
+            .replace("#", "")
+            .toLowerCase();
+          if (/^[0-9a-f]{6}$/.test(v)) {
+            hexInput.value = v;
+            render();
+          }
+        });
+
+        // iOS Safari sometimes fires 'change' more reliably than 'input'
+        colorPicker.addEventListener("change", (e) => {
+          const v = (e.target.value || "")
+            .trim()
+            .replace("#", "")
+            .toLowerCase();
+          if (/^[0-9a-f]{6}$/.test(v)) {
+            hexInput.value = v;
+            render();
+          }
+        });
+      }
+
+      document.getElementById("randomBtn").onclick = () => {
+        hexInput.value = nextRandomColor();
+        render();
+      };
+
+      // ---- Custom "select" for Color mode (always opens below) ----
+      function setMode(mode) {
+        currentMode = mode;
+        modeValue.textContent = mode;
+
+        // aria-selected
+        [...modeMenu.querySelectorAll("button[role='option']")].forEach((b) => {
+          b.setAttribute("aria-selected", String(b.dataset.value === mode));
+        });
+
+        pools[mode] = [];
+        showToast(`Color mode: ${mode}`);
+      }
+
+      function openModeMenu() {
+        modeWrap.classList.add("open");
+        modeBtn.setAttribute("aria-expanded", "true");
+      }
+      function closeModeMenu() {
+        modeWrap.classList.remove("open");
+        modeBtn.setAttribute("aria-expanded", "false");
+      }
+      function toggleModeMenu() {
+        modeWrap.classList.contains("open") ? closeModeMenu() : openModeMenu();
+      }
+
+      modeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleModeMenu();
+      });
+
+      modeMenu.addEventListener("click", (e) => {
+        const btn = e.target.closest("button[data-value]");
+        if (!btn) return;
+        setMode(btn.dataset.value);
+        closeModeMenu();
+      });
+
+      // close on outside click / esc
+      document.addEventListener("click", () => closeModeMenu());
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") closeModeMenu();
+      });
+
+      copyCssBtn.onclick = async () => {
+        const hex = normalizeHex(hexInput.value);
+        if (!hex) {
+          showToast("Enter a valid HEX first");
+          return;
+        }
+        await navigator.clipboard.writeText(cssVariablesFor(hex));
+        showToast("Copied CSS variables ✅");
+      };
+
+      hexInput.addEventListener("input", render);
+      // allow users to paste with # and still work
+      hexInput.addEventListener("blur", () => {
+        const v = (hexInput.value || "").trim();
+        if (v.startsWith("#")) hexInput.value = v.slice(1);
+        render();
+      });
+
+      // initial render
+      render();
+    </script>
+  </body>
+</html>
